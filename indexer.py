@@ -5,6 +5,7 @@ import re
 import math
 import logging
 import numpy as np
+import pickle
 
 class Indexer():
 
@@ -13,7 +14,6 @@ class Indexer():
   def __init__(self):
     self.regex = self.regex_compile()
     self.g_docterm = {}
-    self.g_doclist = {}
     self.stopwords = open('stopwords.txt', 'r').read().split()
     self.pstemmer = stemmer.PorterStemmer()
     self.df = {}
@@ -34,6 +34,13 @@ class Indexer():
     docs = os.listdir(dir)
     return [doc for doc in docs]
 
+  def sim(self, query):
+    q_terms = query.split()
+    q = [self.pstemmer(term, 0, len(term)-1) for term in q_terms]
+    for i in range(len(self.doc_index)):
+    	np.dot(q, self.g_matrix[i])
+
+
   def index(self):
     self.log_init()
     docs = self.doc_list('sanitized')
@@ -41,40 +48,54 @@ class Indexer():
     count = 0
     for doc in docs:
       fin = codecs.open('sanitized/'+doc, 'r', 'utf-8')
-      sanitized_doc = [word for word in fin]
+
+
+      sanitized_doc = [word[:-1] for word in fin]
       fin.close()
       	
       length -= 1
       print length
       self.tf_per_doc(sanitized_doc, doc)
       self.populate_termlist(sanitized_doc)
-      self.doc_index[doc] = count
-      count +=1
+      #self.doc_index[doc] = count
+      #count +=1
     	
     unique_terms = self.dupless_terms(self.termlist)
-    unique_terms.sort()
+    #unique_terms.sort()
     self.termlist = unique_terms
-    #print ''.join(self.termlist)
-    #print len(self.termlist)
     self.term_indexer()
     self.create_matrix(len(docs))
     self.populate_matrix(docs)
     self.tfidf()
-    self.g_matrix.dump('matrix.pkl')
+    
+    self.persist_lists(self.g_matrix, self.term_index, self.doc_index) 
     #print self.g_matrix[self.doc_index['b.txt']][self.term_index['cat']]
-    #print len(self.termlist)
+
+  def persist_lists(self, matrix, term_index, doc_index):
+    
+    #numpy has own pickling builtin so use it
+    matrix.dump('pickle/matrix.pkl')
+    
+    term_pickle = open('pickle/term.pkl', 'wb')
+    doc_pickle = open('pickle/doc.pkl', 'wb')
+    
+    pickle.dump(term_index, term_pickle)
+    pickle.dump(doc_index, doc_pickle)
+
+    term_pickle.close()
+    doc_pickle.close()
 
   #add col and rows as parameters?
   def tfidf(self):
     count=0
     for doc in self.doc_index:
       for term in self.term_index:
-      	tf = float(self.g_matrix[self.doc_index[doc]][self.term_index[term]])
+      	tf = float(self.g_matrix[self.doc_index[doc][1]][self.term_index[term]])
         if tf > 0.0:
           df = float(self.df[term])
           idf = math.log((len(self.doc_index) / df), 2)
           _tfidf = tf*idf
-          self.g_matrix[self.doc_index[doc]][self.term_index[term]] = _tfidf
+          self.g_matrix[self.doc_index[doc][1]][self.term_index[term]] = _tfidf
         count += 1
         print count
 
@@ -83,7 +104,7 @@ class Indexer():
     for doc_key in self.g_docterm.keys():
       term_dict = self.g_docterm[doc_key]
       for term in term_dict.keys():
-        doc_index = self.doc_index[doc_key]
+        doc_index = self.doc_index[doc_key][1]
         term_index = self.term_index[term]
         self.g_matrix[doc_index][term_index] = term_dict[term] 
 
@@ -106,6 +127,7 @@ class Indexer():
     num_docs = len(self.doc_index)
     #print 'num of terms %s' % str(num_terms)
 
+    #useing numpy ndarray instead
     self.g_matrix = np.zeros((num_docs, num_terms), dtype=np.float)
     #for i in range(size):
     #	tmp = [0] * num_terms
@@ -115,21 +137,27 @@ class Indexer():
     docs = self.doc_list(dir)
     length = len(docs)
     count = 0
+    
     for doc in docs:
-      sanitized_doc = self.sanitize(doc)
       length -= 1
       print length
 
       #us os.join here
       try:
-        fin = codecs.open('index/'+doc, 'r', 'utf-8')
+        fin = codecs.open('testindex/'+doc, 'r', 'utf-8')
         fout = codecs.open('sanitized/'+doc, 'w', 'utf-8')
       except:
         self.logging.error('Error with file %s' % doc)
         return False
 
+      contents = fin.read()
+      m = re.search(r'\*\*\s(.*)\s\*\*', contents) 
+      self.doc_index[doc] = [m.group(1), count]
+      count += 1
+      #fin.seek(0)
+
       #split on nonalphanumerics
-      tmp = [word.lower() for word in self.regex.split(fin.read()) if word != '']
+      tmp = [word.lower() for word in self.regex.split(contents) if word != '']
       stopwordless = self.remove_stopwords(tmp)
       stemmed = [self.pstemmer.stem(word, 0, len(word)-1) for word in stopwordless]
       for stem in stemmed:
@@ -139,6 +167,10 @@ class Indexer():
       fout.flush()
       fin.close()
       fout.close()
+
+    doclinks_index = open('pickle/doclinks_index.pkl', 'wb')
+    pickle.dump(self.doc_index, doclinks_index, -1)
+    doclinks_index.close()
 
   def remove_stopwords(self, doc):
     return [word for word in doc if word not in self.stopwords]
@@ -165,6 +197,7 @@ class Indexer():
     self.g_docterm[doc] = tf
 
   def populate_termlist(self, terms):
+    #why not just create term index here too
     for term in terms:
     	self.termlist.append(term)
 
@@ -180,5 +213,6 @@ class Indexer():
 
 if __name__ == '__main__':
 	indexer = Indexer()
-	#indexer.sanitize('index')
+	indexer.sanitize('testindex')
 	indexer.index()
+	#indexer.sim()
