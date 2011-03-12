@@ -1,0 +1,1 @@
+This is the first attempt at a naive search engine.  It uses tf-idf for term weights and uses cosine sim as a similarity measure between query and documents.
