@@ -68,22 +68,22 @@ class Indexer():
     self.populate_matrix(docs)
     self.tfidf()
     
-    self.persist_lists(self.g_matrix, self.term_index, self.doc_index) 
+    self.persist_lists(self.g_matrix, self.term_index, self.df) 
     #print self.g_matrix[self.doc_index['b.txt']][self.term_index['cat']]
 
-  def persist_lists(self, matrix, term_index, doc_index):
+  def persist_lists(self, matrix, term_index, df):
     
     #numpy has own pickling builtin so use it
     matrix.dump('pickle/matrix.pkl')
     
     term_pickle = open('pickle/term.pkl', 'wb')
-    doc_pickle = open('pickle/doc.pkl', 'wb')
+    df_pickle = open('pickle/df.pkl', 'wb')
     
     pickle.dump(term_index, term_pickle)
-    pickle.dump(doc_index, doc_pickle)
+    pickle.dump(df, df_pickle)
 
     term_pickle.close()
-    doc_pickle.close()
+    #doc_pickle.close()
 
   #add col and rows as parameters?
   def tfidf(self):
