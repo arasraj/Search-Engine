@@ -78,12 +78,19 @@ class Indexer():
     
     term_pickle = open('pickle/term.pkl', 'wb')
     df_pickle = open('pickle/df.pkl', 'wb')
+    indextodoc = open('pickle/indextodoc.pkl', 'wb')
     
+    index_to_doc = {}
+    for item in self.doc_index.items():
+    	index_to_doc[item[1][1]] = item[0]
+
     pickle.dump(term_index, term_pickle)
     pickle.dump(df, df_pickle)
+    pickle.dump(index_to_doc, indextodoc)
 
     term_pickle.close()
-    #doc_pickle.close()
+    indextodoc.close()
+    df_pickle.close()
 
   #add col and rows as parameters?
   def tfidf(self):
