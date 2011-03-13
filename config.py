@@ -5,6 +5,7 @@ import pickle
 martix = []
 term_list = []
 doclinks_list = []
+indextodoc = []
 
 
 
