@@ -12,7 +12,7 @@ class Crawler():
   def __init__(self):
     self.frontier = ['http://www.cdm.depaul.edu.com']
     self.visited = []
-    self.stopwords = ['jpg', 'jpe', 'png', 'pdf', 'gif', 'css', 'js', 'ppt', 'ps', 'doc']
+    self.stopwords = ['jpg', 'jpeg', 'png', 'pdf', 'gif', 'css', 'js', 'ppt', 'ps', 'doc']
     self.filetable = {}
     self.previous_host_visit = ''
     self.count = 0
@@ -90,6 +90,7 @@ class Crawler():
     #  return parsedtext
     #else:
     #	return text.strip()
+
     def gettext(item):
       if item.parent.name in ['style', 'script', '[document]', 'head', 'title']:
       	return False

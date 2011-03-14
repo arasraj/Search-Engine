@@ -34,11 +34,11 @@ class Indexer():
     docs = os.listdir(dir)
     return [doc for doc in docs]
 
-  def sim(self, query):
-    q_terms = query.split()
-    q = [self.pstemmer(term, 0, len(term)-1) for term in q_terms]
-    for i in range(len(self.doc_index)):
-    	np.dot(q, self.g_matrix[i])
+  #def sim(self, query):
+  #  q_terms = query.split()
+  #  q = [self.pstemmer(term, 0, len(term)-1) for term in q_terms]
+  #  for i in range(len(self.doc_index)):
+  #  	np.dot(q, self.g_matrix[i])
 
 
   def index(self):
@@ -61,7 +61,6 @@ class Indexer():
       #count +=1
     	
     unique_terms = self.dupless_terms(self.termlist)
-    #unique_terms.sort()
     self.termlist = unique_terms
     self.term_indexer()
     self.create_matrix(len(docs))
@@ -151,7 +150,7 @@ class Indexer():
 
       #us os.join here
       try:
-        fin = codecs.open('testindex/'+doc, 'r', 'utf-8')
+        fin = codecs.open('index2/'+doc, 'r', 'utf-8')
         fout = codecs.open('sanitized/'+doc, 'w', 'utf-8')
       except:
         self.logging.error('Error with file %s' % doc)
@@ -220,6 +219,5 @@ class Indexer():
 
 if __name__ == '__main__':
 	indexer = Indexer()
-	indexer.sanitize('testindex')
+	indexer.sanitize('index2')
 	indexer.index()
-	#indexer.sim()
