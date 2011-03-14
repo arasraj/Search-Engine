@@ -10,7 +10,7 @@ class Query():
     self.q_tf = {}
 
   def parse_query(self): 
-    terms = self.query.split(' ')
+    terms = self.query.lower().split(' ')
     pstemmer = stemmer.PorterStemmer()
     stemmed_terms = [pstemmer.stem(term, 0, len(term)-1) for term in terms]
 
