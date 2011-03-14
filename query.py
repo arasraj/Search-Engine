@@ -5,21 +5,25 @@ import config
 
 class Query():
 
-  query = ''
-  q_tf = {}
-
   def __init__(self, query):
     self.query = query 
+    self.q_tf = {}
 
   def parse_query(self): 
     terms = self.query.split(' ')
     pstemmer = stemmer.PorterStemmer()
     stemmed_terms = [pstemmer.stem(term, 0, len(term)-1) for term in terms]
-    for term in stemmed_terms:
+
+    #expanded_terms = query_expansion(stemmed_terms)
+    eligible_terms = filter(lambda x: config.term_list.get(x), stemmed_terms)
+    print 'eligible %s' % ' '.join(eligible_terms)
+
+    for term in eligible_terms:
       if self.q_tf.get(term):
       	self.q_tf[term] += 1
       else:
       	self.q_tf[term] = 1
+    print 'dict', self.q_tf
     return self.form_query_vector(self.q_tf)
 
   def form_query_vector(self, query):
@@ -38,6 +42,9 @@ class Query():
       vector[config.term_list[q_term]] = tfidf
     return vector
 
+  #want to add for later
+  def query_expansion():
+    pass
     
 
 if __name__ == '__main__':
