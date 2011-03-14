@@ -1,7 +1,4 @@
-import os
-import numpy as np
-import pickle
-
+#global vars
 martix = []
 term_list = []
 doclinks_list = []
