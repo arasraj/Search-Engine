@@ -5,7 +5,7 @@ import re
 import math
 import logging
 import numpy as np
-import pickle
+import cPickle as pickle
 
 class Indexer():
 

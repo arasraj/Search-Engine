@@ -7,7 +7,7 @@ import config
 
 def rank(query, matrix):
   results =  [(i, cosine_sim(query, matrix[i])) for i in range(len(matrix))]
-  results = sorted(results, key=lambda x: x[1])
+  results = sorted(results, key=lambda x: x[1], reverse=True)
   print results
   return results
 
